@@ -11,7 +11,7 @@ const [result, setResult] = useState(undefined)
 
 const payload = {
   "contents":[{
-    "parts":[{"text": "Explain the theory of relativity in simple terms."}]
+    "parts":[{"text": `${input}`}]
   }]
 }
 const query = async () => {
