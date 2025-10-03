@@ -1,34 +1,51 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { GoogleGenAI } from '@google/genai';
+import {URL} from './assets/constants'
+import { useState } from 'react'
+import React from 'react'
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const [input, setInput] = useState("");
+const [result, setResult] = useState(undefined)
+
+const payload = {
+  "contents":[{
+    "parts":[{"text": "Explain the theory of relativity in simple terms."}]
+  }]
+}
+const query = async () => {
+  // console.log(input);
+  let response = await fetch(`${URL}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  let data = await response.json();
+  // console.log(data.candidates[0].content.parts[0].text);
+  setResult(data.candidates[0].content.parts[0].text);
+}
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+<div className='bigContainer'>
+
+  <div className='container w-320 h-110 text-white m-auto rounded-2xl border-zinc-400 flex items-center justify-center
+   p-3 mb-10 mt-10 overflow-scroll' >
+    {result}
+    </div>
+
+    <div className='bg-zinc-800 w-1/2 h-20 text-white m-auto rounded-2xl border border-zinc-400 flex items-center justify-center
+     p-3' >
+
+       <input type="text" placeholder='Ask anything...' onChange={(e)=>setInput(e.target.value)} className='w-full h-full bg-transparent outline-none p-2 resize-none' />
+       <button type='submit' onClick={query}>Ask</button>
+
+    </div>
+
+</div>
+  
   )
 }
 
