@@ -1,6 +1,6 @@
 import './App.css'
 import { GoogleGenAI } from '@google/genai';
-import {URL} from './assets/constants'
+import {API_URL} from './assets/constants'
 import { useState } from 'react'
 import React from 'react'
 
@@ -16,7 +16,7 @@ const payload = {
 }
 const query = async () => {
   // console.log(input);
-  let response = await fetch(`${URL}`, {
+  let response = await fetch(`${API_URL}`, {
     method: 'POST',
     body: JSON.stringify(payload),
     headers: {
