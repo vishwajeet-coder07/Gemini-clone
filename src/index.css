@@ -1,31 +1,37 @@
 @import "tailwindcss";
 
-/* Ensure full height layout */
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+@layer utilities {
+  /* Hide scrollbars utility class */
+  .scrollbar-hide {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+    width: 0px;
+    background: transparent;
+  }
+  
+  /* Alternative no-scrollbar class */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-#root {
-  height: 100%;
+/* Global scrollbar removal */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Custom scrollbar for better appearance */
-.container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.container::-webkit-scrollbar-track {
-  background: #27272a;
-  border-radius: 4px;
-}
-
-.container::-webkit-scrollbar-thumb {
-  background: #52525b;
-  border-radius: 4px;
-}
-
-.container::-webkit-scrollbar-thumb:hover {
-  background: #71717a;
+*::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  background: transparent;
 }

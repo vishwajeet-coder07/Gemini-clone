@@ -7,25 +7,22 @@ import React from 'react'
 function App() {
 
   const [input, setInput] = useState("");
-  const [result, setResult] = useState(undefined);
+  const [conversation, setConversation] = useState([]); // Array to store conversation history
   const [isLoading, setIsLoading] = useState(false);
 
-const payload = {
-  "contents":[{
-    "parts":[{"text": `${input}`}]
-  }]
-}
+// Payload will be created dynamically in the query function
 
-
+// Function to render formatted text like real Gemini
 const renderFormattedText = (text) => {
   if (!text) return null;
   
+  // Split text into paragraphs and process each part
   const parts = text.split(/\n\s*\n/);
   
   return parts.map((part, partIndex) => {
     if (!part.trim()) return null;
     
-
+    // Split by lines to handle bullet points and headings
     const lines = part.split('\n').filter(line => line.trim());
     
     return (
@@ -33,14 +30,17 @@ const renderFormattedText = (text) => {
         {lines.map((line, lineIndex) => {
           const trimmedLine = line.trim();
           
+          // Check if line is a heading (has ** markers or matches heading patterns)
           const isHeading = /\*\*.*\*\*/.test(trimmedLine) || 
                            (/^#{1,3}\s/.test(trimmedLine)) ||
                            (trimmedLine.length < 80 && 
                             (trimmedLine.endsWith(':') || 
                              /^[A-Z][^.]*:?$/.test(trimmedLine)));
           
+          // Check if line is a bullet point
           const isBulletPoint = /^[*\-•]\s/.test(trimmedLine) || /^\d+\.\s/.test(trimmedLine);
           
+          // Clean the text
           let cleanText = trimmedLine
             .replace(/\*\*/g, '') // Remove ** markers
             .replace(/^[*\-•]\s/, '') // Remove bullet markers
@@ -77,7 +77,20 @@ const renderFormattedText = (text) => {
 const query = async () => {
   if (!input.trim()) return;
   
+  const userMessage = input.trim();
+  
+  // Create payload with current user message
+  const payload = {
+    "contents":[{
+      "parts":[{"text": userMessage}]
+    }]
+  };
+  
+  // Add user message to conversation
+  setConversation(prev => [...prev, { type: 'user', content: userMessage }]);
+  setInput(''); // Clear input immediately
   setIsLoading(true);
+  
   try {
     let response = await fetch(`${API_URL}`, {
       method: 'POST',
@@ -94,52 +107,83 @@ const query = async () => {
     let data = await response.json();  
     let dataString = data.candidates[0].content.parts[0].text;
     
+    // Add AI response to conversation
     console.log('Response received:', dataString);
-    setResult(dataString);
+    setConversation(prev => [...prev, { type: 'ai', content: dataString }]);
   } catch (error) {
     console.error('Error fetching data:', error);
-    setResult(['Error: Unable to get response. Please try again.']);
+    setConversation(prev => [...prev, { type: 'ai', content: 'Error: Unable to get response. Please try again.' }]);
   } finally {
     setIsLoading(false);
   }
 }
 
   return (
-<div className='bigContainer min-h-screen bg-zinc-950 p-4'  >
+<div className='bigContainer h-screen bg-zinc-800 p-4 flex flex-col overflow-hidden'>
+  <nav className='flex flex-row'>
+<div>
+  <h1 className='text-2xl font-bold text-zinc-400'>Gemini</h1>
+</div>
+<div className='h-7 w-15 rounded-lg mt-1 absolute right-15 text-2 text-white font-bold text-center bg-zinc-400/20'>PR0</div>
+<div className='NAME bg-blue-500 rounded-full w-10 h-10 text-center font-bold text-white text-2xl pt-0.5 absolute right-2'>V</div>
+  </nav>
 
-  <div className='container w-full max-w-4xl min-h-96 max-h-screen text-white m-auto rounded-2xl 
-   p-6 mb-10 mt-8 overflow-y-auto bg-gradient-to-br from-zinc-900/50 to-zinc-800/50 backdrop-blur-sm' >
-    
+  <div className='container w-full max-w-4xl flex-1 text-white mx-auto rounded-2xl
+     p-6 mb-4 overflow-y-auto scrollbar-hide backdrop-blur-sm'>
+
     {
-      isLoading ? (
+      conversation.length === 0 && !isLoading ? (
         <div className='flex items-center justify-center h-full'>
-          <div className='text-center'>
-            <div className='animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4'></div>
-            <h1 className='text-zinc-400 text-xl'>Generating response...</h1>
-          </div>
+          <h1 className='text-zinc-400 text-xl'>Start a conversation with Gemini</h1>
         </div>
-      ) : result === undefined ? 
-        <div className='flex items-center justify-center h-full'>
-          <h1 className='text-zinc-400 text-xl'>Your results will appear here</h1>
-        </div> :
-        <div className='w-full h-full'>
-          <div className='prose prose-invert max-w-none'>
-            {typeof result === 'string' && result.trim() ? (
-              <div className='text-gray-200'>
-                {renderFormattedText(result)}
+      ) : (
+        <div className='w-full h-full space-y-6'>
+          {conversation.map((message, index) => (
+            <div key={index} className={`flex w-full ${
+              message.type === 'user' ? 'justify-end' : 'justify-start'
+            }`}>
+              {message.type === 'user' ? (
+           
+                <div className='max-w-2xl'>
+                  <div className='bg-blue-600 text-white rounded-2xl rounded-tr-md px-4 py-3 shadow-lg'>
+                    <p className='text-sm leading-relaxed whitespace-pre-wrap'>{message.content}</p>
+                  </div>
+                  <div className='text-xs text-zinc-500 mt-1 text-right'>You</div>
+                </div>
+              ) : (
+
+                <div className='max-w-4xl'><img src="src/assets/Gemini.png" alt="Logo" className="absolute left-0 w-10 h-8"/>
+                  <div className='bg-zinc-800/50 border border-zinc-700/50 text-gray-200 rounded-2xl rounded-tl-md px-6 py-4 shadow-lg ml-3'>
+                    <div className='prose prose-invert max-w-none'>
+                      {renderFormattedText(message.content)}
+                    </div>
+                  </div>
+                  <div className='text-xs text-zinc-500 mt-1'>Gemini</div>
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {isLoading && (
+            <div className='flex justify-start'>
+              <div className='max-w-4xl'>
+                <div className='bg-zinc-800/50 border border-zinc-700/50 text-gray-200 rounded-2xl rounded-tl-md px-6 py-4 shadow-lg'>
+                  <div className='flex items-center space-x-3'>
+                    <div className='animate-spin w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full'></div>
+                    <span className='text-zinc-400'>Gemini is thinking...</span>
+                  </div>
+                </div>
+                <div className='text-xs text-zinc-500 mt-1'>Gemini</div>
               </div>
-            ) : (
-              <div className='text-center text-zinc-400 p-4'>
-                <p>No results to display</p>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+      )
     }
     
     </div>
 
-    <div className='bg-zinc-800 w-full max-w-4xl h-20 text-white m-auto rounded-2xl border border-zinc-400 flex items-center justify-center p-3' >
+    <div className='bg-zinc-800 w-full max-w-4xl h-20 text-white mx-auto rounded-2xl border border-zinc-400 flex items-center justify-center p-3 flex-shrink-0 shadow-[-2px_-8px_10px_-3px_rgba(0,0,0,0.3)]'>
        <input 
          type="text" 
          placeholder='Ask anything...' 
