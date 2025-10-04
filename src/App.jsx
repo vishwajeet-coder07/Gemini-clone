@@ -1,14 +1,20 @@
 import './App.css'
 import { GoogleGenAI } from '@google/genai';
 import {API_URL} from './assets/constants'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import React from 'react'
+import GeminiLogo from './assets/Gemini.png'
 
 function App() {
 
   const [input, setInput] = useState("");
   const [conversation, setConversation] = useState([]); 
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = GeminiLogo;
+  }, []);
 
 const renderFormattedText = (text) => {
   if (!text) return null;
@@ -128,8 +134,9 @@ const query = async () => {
 
     {
       conversation.length === 0 && !isLoading ? (
-        <div className='flex items-center justify-center h-full'>
-          <h1 className='text-zinc-400 text-base sm:text-lg md:text-xl text-center px-4'>Start a conversation with Gemini</h1>
+        <div className='flex flex-col items-center justify-center h-full'>
+          <h1 className='bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600 bg-clip-text text-transparent text-xl sm:text-4xl md:text-4xl text-center px-4 font-semibold'>Hello, Vishwajeet</h1>
+           <h1 className='text-zinc-400 text-xl sm:text-3xl md:text-4xl text-center px-4'>What should we do today?</h1>
         </div>
       ) : (
         <div className='w-full h-full space-y-6'>
@@ -148,7 +155,7 @@ const query = async () => {
               ) : (
 
                 <div className='max-w-4xl flex flex-row items-start gap-1'>
-                  <img src="src/assets/Gemini.png" alt="Gemini Logo" className="w-6 h-6 sm:w-8 sm:h-8 mt-3 flex-shrink-0"/>
+                  <img src={GeminiLogo} alt="Gemini Logo" className="w-6 h-6 sm:w-8 sm:h-8 mt-3 flex-shrink-0"/>
                   <div className='text-gray-200 rounded-2xl rounded-tl-md px-3 sm:px-6 py-3 sm:py-4 flex-1'>
                     <div className='prose prose-invert max-w-none'>
                       {renderFormattedText(message.content)}
